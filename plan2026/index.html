@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan 2026 – Artur</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & VARS ── */
+:root {
+  --bg: #09090b;
+  --s0: #111114;
+  --s1: #18181c;
+  --border: #1f1f25;
+  --dim: #2a2a32;
+  --muted: #52525e;
+  --text: #e4e4e8;
+  --sub: #9898a8;
+  --yellow: #e8ff47;
+  --orange: #ff6b35;
+  --teal: #4ecdc4;
+  --purple: #a78bfa;
+  --pink: #f472b6;
+  --red: #f87171;
+  --green: #4ade80;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.6;min-height:100vh;}
+button{cursor:pointer;font-family:'DM Sans',sans-serif;}
+input,textarea,select{font-family:'DM Sans',sans-serif;font-size:14px;}
+a{color:inherit;text-decoration:none;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:var(--s0);}
+::-webkit-scrollbar-thumb{background:var(--dim);border-radius:2px;}
+
+/* ── LOGIN ── */
+#login-screen {
+  display:flex;align-items:center;justify-content:center;min-height:100vh;
+  background: radial-gradient(ellipse at 50% 0%, #1a2000 0%, var(--bg) 60%);
+}
+.login-box {
+  width:340px;padding:40px 32px;background:var(--s0);border:1px solid var(--border);border-radius:4px;
+}
+.login-box h1 {
+  font-family:'Bebas Neue',sans-serif;font-size:52px;color:var(--yellow);line-height:1;margin-bottom:4px;
+}
+.login-box p { color:var(--muted);font-size:12px;margin-bottom:28px;font-family:'DM Mono',monospace;letter-spacing:2px; }
+.field { margin-bottom:14px; }
+.field label { display:block;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px; }
+.field input {
+  width:100%;padding:10px 12px;background:var(--s1);border:1px solid var(--border);border-radius:3px;
+  color:var(--text);outline:none;transition:border-color 0.15s;
+}
+.field input:focus { border-color:var(--yellow); }
+.btn-primary {
+  width:100%;padding:11px;background:var(--yellow);color:#000;border:none;border-radius:3px;
+  font-weight:600;font-size:13px;letter-spacing:1px;transition:opacity 0.15s;margin-top:4px;
+}
+.btn-primary:hover{opacity:0.85;}
+.login-error { color:var(--red);font-size:12px;margin-top:8px;text-align:center; }
+
+/* ── SHELL ── */
+#app { display:none; }
+.shell { display:flex;min-height:100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width:200px;min-height:100vh;background:var(--s0);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100;
+}
+.sidebar-logo {
+  padding:20px 20px 16px;border-bottom:1px solid var(--border);
+}
+.sidebar-logo h1 {
+  font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--yellow);line-height:1;
+}
+.sidebar-logo span { font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px; }
+.nav { flex:1;padding:12px 8px; }
+.nav-item {
+  display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:3px;
+  color:var(--sub);font-size:13px;font-weight:400;cursor:pointer;transition:all 0.15s;margin-bottom:2px;
+  border:none;background:none;width:100%;text-align:left;
+}
+.nav-item:hover { background:var(--s1);color:var(--text); }
+.nav-item.active { background:var(--dim);color:var(--yellow); }
+.nav-item .nav-icon { font-size:15px;min-width:18px; }
+.sidebar-footer { padding:12px 16px;border-top:1px solid var(--border); }
+.logout-btn {
+  font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;
+  font-family:'DM Mono',monospace;letter-spacing:1px;
+}
+.logout-btn:hover{color:var(--red);}
+
+/* ── MAIN ── */
+.main { margin-left:200px;padding:28px 28px 64px;flex:1; }
+.page { display:none; }
+.page.active { display:block; }
+.page-header { margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border); }
+.page-header h2 { font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--yellow);line-height:1; }
+.page-header p { color:var(--muted);font-size:12px;font-family:'DM Mono',monospace;letter-spacing:1px;margin-top:4px; }
+
+/* ── GRID ── */
+.grid { display:grid;gap:12px; }
+.g-2 { grid-template-columns:repeat(2,1fr); }
+.g-3 { grid-template-columns:repeat(3,1fr); }
+.g-4 { grid-template-columns:repeat(4,1fr); }
+@media(max-width:900px){.g-4{grid-template-columns:repeat(2,1fr);}.g-3{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:640px){.g-4,.g-3,.g-2{grid-template-columns:1fr;}.sidebar{transform:translateX(-200px);}.main{margin-left:0;}}
+
+/* ── CARD ── */
+.card { background:var(--s0);border:1px solid var(--border);border-radius:4px;padding:18px; }
+.card-label {
+  font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;
+  text-transform:uppercase;color:var(--muted);margin-bottom:10px;
+}
+.card-val { font-family:'Bebas Neue',sans-serif;font-size:44px;line-height:1; }
+.card-unit { font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px; }
+.card-sub { font-size:11px;color:var(--sub);margin-top:3px; }
+.delta-pos { color:var(--green);font-size:11px;font-family:'DM Mono',monospace; }
+.delta-neg { color:var(--red);font-size:11px;font-family:'DM Mono',monospace; }
+
+/* ── PROGRESS BAR ── */
+.prog-wrap { margin-top:8px; }
+.prog-label { display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:4px; }
+.prog-track { height:3px;background:var(--dim);border-radius:2px;overflow:hidden; }
+.prog-fill { height:100%;border-radius:2px;transition:width 0.6s cubic-bezier(.4,0,.2,1); }
+
+/* ── FORM ELEMENTS ── */
+.form-group { margin-bottom:14px; }
+.form-group label { display:block;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px; }
+.form-input {
+  width:100%;padding:9px 11px;background:var(--s1);border:1px solid var(--border);border-radius:3px;
+  color:var(--text);outline:none;transition:border-color 0.15s;
+}
+.form-input:focus{border-color:var(--yellow);}
+textarea.form-input{resize:vertical;min-height:70px;}
+.form-row { display:grid;grid-template-columns:1fr 1fr;gap:10px; }
+.btn-save {
+  padding:9px 20px;background:var(--yellow);color:#000;border:none;border-radius:3px;
+  font-weight:600;font-size:12px;letter-spacing:1px;transition:opacity 0.15s;
+}
+.btn-save:hover{opacity:0.85;}
+.btn-ghost {
+  padding:7px 14px;background:none;border:1px solid var(--border);border-radius:3px;
+  color:var(--sub);font-size:12px;transition:all 0.15s;
+}
+.btn-ghost:hover{border-color:var(--dim);color:var(--text);}
+.save-msg { font-size:11px;color:var(--green);font-family:'DM Mono',monospace;opacity:0;transition:opacity 0.3s; }
+.save-msg.show{opacity:1;}
+
+/* ── CHECKLIST ── */
+.check-section { margin-bottom:18px; }
+.check-section-title {
+  font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--muted);
+  text-transform:uppercase;margin-bottom:8px;
+}
+.check-item {
+  display:flex;align-items:center;gap:10px;padding:8px 0;
+  border-bottom:1px solid var(--border);cursor:pointer;user-select:none;transition:color 0.15s;
+}
+.check-item:last-child{border-bottom:none;}
+.check-box {
+  width:16px;height:16px;border:1px solid var(--dim);border-radius:2px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:10px;transition:all 0.15s;
+}
+.check-item.checked .check-box { background:var(--yellow);border-color:var(--yellow);color:#000; }
+.check-item.checked { color:var(--muted); }
+.check-item.checked span:not(.check-box) { text-decoration:line-through; }
+.week-progress { margin-bottom:20px; }
+.week-label { font-family:'DM Mono',monospace;font-size:10px;color:var(--sub);margin-bottom:6px; }
+
+/* ── STUDY PLAN ── */
+.cert-tabs { display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap; }
+.cert-tab {
+  padding:6px 14px;background:none;border:1px solid var(--border);border-radius:100px;
+  color:var(--muted);font-size:12px;cursor:pointer;transition:all 0.15s;
+}
+.cert-tab:hover{border-color:var(--dim);color:var(--text);}
+.cert-tab.active{background:var(--yellow);border-color:var(--yellow);color:#000;font-weight:600;}
+.today-topic {
+  background:linear-gradient(135deg,#1a2000,var(--s0));border:1px solid #2a3600;
+  border-radius:4px;padding:16px;margin-bottom:16px;
+}
+.today-badge {
+  display:inline-block;background:var(--yellow);color:#000;font-size:9px;letter-spacing:2px;
+  font-family:'DM Mono',monospace;padding:2px 8px;border-radius:100px;margin-bottom:8px;
+}
+.today-topic h3 { font-size:15px;font-weight:500;margin-bottom:2px; }
+.today-topic p { font-size:11px;color:var(--sub); }
+.domain-group { margin-bottom:20px; }
+.domain-title {
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);
+  text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:8px;
+}
+.domain-title::after { content:'';flex:1;height:1px;background:var(--border); }
+.topic-item {
+  display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);
+}
+.topic-item:last-child{border-bottom:none;}
+.topic-status {
+  width:20px;height:20px;border-radius:50%;border:1.5px solid var(--dim);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:9px;transition:all 0.15s;
+}
+.topic-status.pending { border-color:var(--dim);color:transparent; }
+.topic-status.in_progress { border-color:var(--orange);color:var(--orange); }
+.topic-status.done { background:var(--green);border-color:var(--green);color:#000; }
+.topic-label { flex:1;font-size:13px; }
+.topic-item.done-item .topic-label { color:var(--muted);text-decoration:line-through; }
+.topic-hours { font-family:'DM Mono',monospace;font-size:10px;color:var(--muted); }
+.cert-progress-bar { margin-bottom:16px; }
+
+/* ── METRICS PAGE ── */
+.chart-wrap { position:relative;height:200px;margin-top:12px; }
+.metrics-form { display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:10px; }
+@media(max-width:500px){.metrics-form{grid-template-columns:1fr;}}
+
+/* ── REVIEW PAGE ── */
+.mood-selector { display:flex;gap:8px;margin-top:6px; }
+.mood-btn {
+  width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:none;
+  font-size:18px;cursor:pointer;transition:all 0.15s;
+}
+.mood-btn:hover{border-color:var(--dim);}
+.mood-btn.selected{border-color:var(--yellow);background:var(--dim);}
+.review-history { margin-top:24px; }
+.review-card { padding:14px;background:var(--s1);border:1px solid var(--border);border-radius:3px;margin-bottom:8px; }
+.review-card-header { display:flex;justify-content:space-between;margin-bottom:8px; }
+.review-week { font-family:'DM Mono',monospace;font-size:10px;color:var(--muted); }
+.review-mood-display { font-size:16px; }
+.review-section { margin-bottom:6px; }
+.review-section-label { font-size:9px;letter-spacing:2px;color:var(--muted);font-family:'DM Mono',monospace;text-transform:uppercase; }
+.review-section-text { font-size:12px;color:var(--sub); }
+
+/* ── LOADING ── */
+.loading { text-align:center;padding:40px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px; }
+
+/* ── TOAST ── */
+.toast {
+  position:fixed;bottom:24px;right:24px;background:var(--s1);border:1px solid var(--border);
+  border-radius:4px;padding:10px 16px;font-size:12px;font-family:'DM Mono',monospace;
+  z-index:999;transform:translateY(60px);opacity:0;transition:all 0.3s;
+}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.success{border-color:var(--green);color:var(--green);}
+.toast.error{border-color:var(--red);color:var(--red);}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <h1>PLAN<br>2026</h1>
+    <p>ARTUR · PRIVATE</p>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="seu@email.com">
+    </div>
+    <div class="field">
+      <label>Senha</label>
+      <input type="password" id="login-password" placeholder="••••••••">
+    </div>
+    <button class="btn-primary" onclick="doLogin()">ENTRAR</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="shell">
+    <!-- SIDEBAR -->
+    <nav class="sidebar">
+      <div class="sidebar-logo">
+        <h1>PLAN<br>2026</h1>
+        <span>ARTUR</span>
+      </div>
+      <div class="nav">
+        <button class="nav-item active" onclick="goTo('dashboard')">
+          <span class="nav-icon">◈</span> Dashboard
+        </button>
+        <button class="nav-item" onclick="goTo('metrics')">
+          <span class="nav-icon">↗</span> Métricas
+        </button>
+        <button class="nav-item" onclick="goTo('checklist')">
+          <span class="nav-icon">◻</span> Checklist
+        </button>
+        <button class="nav-item" onclick="goTo('study')">
+          <span class="nav-icon">◎</span> Estudos
+        </button>
+        <button class="nav-item" onclick="goTo('review')">
+          <span class="nav-icon">◷</span> Review
+        </button>
+      </div>
+      <div class="sidebar-footer">
+        <button class="logout-btn" onclick="doLogout()">→ sair</button>
+      </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-header">
+          <h2>DASHBOARD</h2>
+          <p id="dash-week-label">SEMANA –</p>
+        </div>
+        <div class="grid g-4" id="stat-cards"></div>
+        <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="card" id="dash-checklist-summary">
+            <div class="card-label">Checklist desta semana</div>
+            <div class="loading">carregando...</div>
+          </div>
+          <div class="card" id="dash-study-today">
+            <div class="card-label">O que estudar hoje</div>
+            <div class="loading">carregando...</div>
+          </div>
+        </div>
+        <div style="margin-top:12px">
+          <div class="card">
+            <div class="card-label">Foco Real</div>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:4px">
+              <div style="padding:10px;background:var(--dim);border-radius:2px;font-size:12px">→ Liderar com visibilidade toda semana</div>
+              <div style="padding:10px;background:var(--dim);border-radius:2px;font-size:12px">→ Treinar 3x por semana, sem negociar</div>
+              <div style="padding:10px;background:var(--dim);border-radius:2px;font-size:12px">→ Pagar dívida todo mês, sem exceção</div>
+              <div style="padding:10px;background:var(--dim);border-radius:2px;font-size:12px">→ Estudar 3x por semana, sem parar</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- METRICS -->
+      <div class="page" id="page-metrics">
+        <div class="page-header">
+          <h2>MÉTRICAS</h2>
+          <p>REGISTRE SEMANALMENTE</p>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="card">
+            <div class="card-label">Novo registro</div>
+            <div class="form-group">
+              <label>Data</label>
+              <input type="date" class="form-input" id="m-date">
+            </div>
+            <div class="metrics-form">
+              <div class="form-group">
+                <label>Peso (kg)</label>
+                <input type="number" step="0.1" class="form-input" id="m-weight" placeholder="94.0">
+              </div>
+              <div class="form-group">
+                <label>Dívida (USD)</label>
+                <input type="number" class="form-input" id="m-debt" placeholder="12000">
+              </div>
+              <div class="form-group">
+                <label>Treinos na semana</label>
+                <input type="number" class="form-input" id="m-workouts" placeholder="3" min="0" max="7">
+              </div>
+              <div class="form-group">
+                <label>Sessões de estudo</label>
+                <input type="number" class="form-input" id="m-study" placeholder="3" min="0" max="21">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Notas (opcional)</label>
+              <textarea class="form-input" id="m-notes" rows="2" placeholder="como foi a semana..."></textarea>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px">
+              <button class="btn-save" onclick="saveMetric()">SALVAR</button>
+              <span class="save-msg" id="metric-save-msg">✓ salvo</span>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:12px">
+              <div class="card-label">Peso (kg)</div>
+              <div class="chart-wrap"><canvas id="chart-weight"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="card-label">Dívida (USD)</div>
+              <div class="chart-wrap"><canvas id="chart-debt"></canvas></div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <div class="card-label">Histórico</div>
+          <div id="metrics-table"><div class="loading">carregando...</div></div>
+        </div>
+      </div>
+
+      <!-- CHECKLIST -->
+      <div class="page" id="page-checklist">
+        <div class="page-header">
+          <h2>CHECKLIST</h2>
+          <p id="check-week-label">SEMANA –</p>
+        </div>
+        <div style="display:grid;grid-template-columns:280px 1fr;gap:12px">
+          <div class="card">
+            <div class="week-progress">
+              <div class="week-label" id="check-progress-label">0 / 0 itens</div>
+              <div class="prog-track">
+                <div class="prog-fill" id="check-progress-fill" style="background:var(--yellow);width:0%"></div>
+              </div>
+            </div>
+            <div id="checklist-container"><div class="loading">carregando...</div></div>
+          </div>
+          <div class="card">
+            <div class="card-label">Histórico das últimas semanas</div>
+            <div id="check-history"><div class="loading">carregando...</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STUDY -->
+      <div class="page" id="page-study">
+        <div class="page-header">
+          <h2>ESTUDOS</h2>
+          <p>Q2 2026 · DATABRICKS · AWS · AGENTIC AI</p>
+        </div>
+        <div id="study-today-banner"></div>
+        <div class="cert-tabs" id="cert-tabs">
+          <button class="cert-tab active" onclick="switchCert('Databricks',this)">Databricks</button>
+          <button class="cert-tab" onclick="switchCert('AWS',this)">AWS DEA-C01</button>
+          <button class="cert-tab" onclick="switchCert('Agentic AI',this)">Agentic AI</button>
+        </div>
+        <div id="study-content"><div class="loading">carregando...</div></div>
+      </div>
+
+      <!-- REVIEW -->
+      <div class="page" id="page-review">
+        <div class="page-header">
+          <h2>REVIEW SEMANAL</h2>
+          <p id="review-week-label">SEMANA –</p>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="card">
+            <div class="card-label">Esta semana</div>
+            <div class="form-group">
+              <label>O que funcionou?</label>
+              <textarea class="form-input" id="r-worked" rows="3" placeholder="o que deu certo..."></textarea>
+            </div>
+            <div class="form-group">
+              <label>O que drenou?</label>
+              <textarea class="form-input" id="r-drained" rows="3" placeholder="o que pesou..."></textarea>
+            </div>
+            <div class="form-group">
+              <label>1 ajuste simples</label>
+              <textarea class="form-input" id="r-adjust" rows="2" placeholder="uma mudança pra próxima semana..."></textarea>
+            </div>
+            <div class="form-group">
+              <label>Humor geral</label>
+              <div class="mood-selector" id="mood-selector">
+                <button class="mood-btn" data-mood="1" onclick="selectMood(1)">😞</button>
+                <button class="mood-btn" data-mood="2" onclick="selectMood(2)">😕</button>
+                <button class="mood-btn" data-mood="3" onclick="selectMood(3)">😐</button>
+                <button class="mood-btn" data-mood="4" onclick="selectMood(4)">🙂</button>
+                <button class="mood-btn" data-mood="5" onclick="selectMood(5)">😄</button>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
+              <button class="btn-save" onclick="saveReview()">SALVAR REVIEW</button>
+              <span class="save-msg" id="review-save-msg">✓ salvo</span>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="card-label">Histórico de reviews</div>
+              <div id="review-history"><div class="loading">carregando...</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG (REPLACE THESE) ──────────────────────────────────────────
+const SUPABASE_URL = 'https://oqbmtaleohsenjdddkgj.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9xYm10YWxlb2hzZW5qZGRka2dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNDkwODUsImV4cCI6MjA5MDYyNTA4NX0.ITZd93_Eb9jj2CVCZIrnq5AP51BEoRIxSL73idwsKMs';
+// ────────────────────────────────────────────────────────────────────
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let currentMood = null;
+let currentCert = 'Databricks';
+let checkItems = [];
+let weekKey = getWeekKey();
+let chartWeight = null;
+let chartDebt = null;
+
+// ── UTILS ─────────────────────────────────────────────────────────
+
+function getWeekKey(date = new Date()) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2,'0')}`;
+}
+
+function getWeekLabel(key = weekKey) {
+  return `Semana ${key.replace('-W',' · W')}`;
+}
+
+function fmtDate(d) {
+  return new Date(d).toLocaleDateString('pt-BR');
+}
+
+function fmtCurrency(v) {
+  return v != null ? `$${Number(v).toLocaleString('en-US')}` : '–';
+}
+
+function toast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type}`;
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function showSaveMsg(id) {
+  const el = document.getElementById(id);
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// ── AUTH ──────────────────────────────────────────────────────────
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value;
+  const pw = document.getElementById('login-password').value;
+  const { error } = await sb.auth.signInWithPassword({ email, password: pw });
+  if (error) {
+    document.getElementById('login-error').textContent = error.message;
+    return;
+  }
+  bootApp();
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+async function checkSession() {
+  const { data } = await sb.auth.getSession();
+  if (data.session) bootApp();
+}
+
+function bootApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('dash-week-label').textContent = getWeekLabel();
+  document.getElementById('check-week-label').textContent = getWeekLabel();
+  document.getElementById('review-week-label').textContent = getWeekLabel();
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('m-date').value = today;
+  loadDashboard();
+}
+
+// ── NAV ───────────────────────────────────────────────────────────
+
+function goTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(`page-${page}`).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (page === 'dashboard') loadDashboard();
+  if (page === 'metrics')   loadMetrics();
+  if (page === 'checklist') loadChecklist();
+  if (page === 'study')     loadStudy();
+  if (page === 'review')    loadReview();
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────
+
+async function loadDashboard() {
+  // Stat cards
+  const { data: mData } = await sb.from('metrics').select('*').order('date', {ascending:false}).limit(2);
+  const latest = mData?.[0];
+  const prev   = mData?.[1];
+
+  const cards = [
+    {
+      label: 'Peso',
+      val: latest?.weight_kg ? `${latest.weight_kg}` : '–',
+      unit: 'kg',
+      color: 'var(--teal)',
+      delta: latest && prev && prev.weight_kg ? (latest.weight_kg - prev.weight_kg).toFixed(1) : null,
+      deltaInverse: true
+    },
+    {
+      label: 'Dívida',
+      val: latest?.debt_usd ? `${Math.round(latest.debt_usd/1000)}k` : '–',
+      unit: 'USD',
+      color: 'var(--orange)',
+      delta: latest && prev && prev.debt_usd ? Math.round(latest.debt_usd - prev.debt_usd) : null,
+      deltaInverse: true
+    },
+    {
+      label: 'Treinos',
+      val: latest?.workouts_week ?? '–',
+      unit: 'esta semana',
+      color: 'var(--yellow)',
+      delta: null
+    },
+    {
+      label: 'Sessões Estudo',
+      val: latest?.study_sessions_week ?? '–',
+      unit: 'esta semana',
+      color: 'var(--purple)',
+      delta: null
+    }
+  ];
+
+  document.getElementById('stat-cards').innerHTML = cards.map(c => `
+    <div class="card">
+      <div class="card-label">${c.label}</div>
+      <div class="card-val" style="color:${c.color}">${c.val}</div>
+      <div class="card-unit">${c.unit}</div>
+      ${c.delta != null ? `<div class="${c.deltaInverse ? (c.delta < 0 ? 'delta-pos' : 'delta-neg') : (c.delta > 0 ? 'delta-pos' : 'delta-neg')}">${c.delta > 0 ? '+' : ''}${c.delta} vs anterior</div>` : ''}
+    </div>
+  `).join('');
+
+  // Checklist summary
+  await loadChecklistSummaryDash();
+
+  // Study today
+  await loadStudyTodayDash();
+}
+
+async function loadChecklistSummaryDash() {
+  const { data: items } = await sb.from('checklist_items').select('*').eq('active', true);
+  const { data: log } = await sb.from('checklist_log').select('*').eq('week_key', weekKey);
+
+  if (!items) return;
+  const total = items.length;
+  const checked = log ? log.filter(l => l.checked).length : 0;
+  const pct = total ? Math.round(checked / total * 100) : 0;
+
+  const catColors = {career:'var(--yellow)',health:'var(--teal)',finance:'var(--orange)',study:'var(--purple)',life:'var(--pink)'};
+  const catLabels = {career:'⚡ Carreira',health:'💪 Saúde',finance:'💰 Financeiro',study:'📚 Estudo',life:'🎮 Vida'};
+  const cats = [...new Set(items.map(i => i.category))];
+
+  const checkedIds = new Set(log ? log.filter(l => l.checked).map(l => l.item_id) : []);
+
+  document.getElementById('dash-checklist-summary').innerHTML = `
+    <div class="card-label">Checklist desta semana</div>
+    <div class="prog-wrap" style="margin-bottom:14px">
+      <div class="prog-label"><span>${checked} / ${total} itens</span><span>${pct}%</span></div>
+      <div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:var(--yellow)"></div></div>
+    </div>
+    ${cats.map(cat => {
+      const catItems = items.filter(i => i.category === cat);
+      const catChecked = catItems.filter(i => checkedIds.has(i.id)).length;
+      const catPct = catItems.length ? Math.round(catChecked / catItems.length * 100) : 0;
+      return `
+        <div style="margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">
+            <span>${catLabels[cat]||cat}</span>
+            <span style="font-family:'DM Mono',monospace;color:var(--muted)">${catChecked}/${catItems.length}</span>
+          </div>
+          <div class="prog-track"><div class="prog-fill" style="width:${catPct}%;background:${catColors[cat]||'var(--text)'}"></div></div>
+        </div>
+      `;
+    }).join('')}
+  `;
+}
+
+async function loadStudyTodayDash() {
+  const { data: topics } = await sb.from('study_plan')
+    .select('*')
+    .neq('status', 'done')
+    .order('priority')
+    .order('cert')
+    .limit(3);
+
+  const el = document.getElementById('dash-study-today');
+  if (!topics || topics.length === 0) {
+    el.innerHTML = `<div class="card-label">O que estudar hoje</div><p style="color:var(--muted);font-size:12px">Todos os tópicos concluídos! 🎉</p>`;
+    return;
+  }
+
+  const certColors = {'Databricks':'var(--teal)','AWS':'var(--orange)','Agentic AI':'var(--purple)'};
+  el.innerHTML = `
+    <div class="card-label">O que estudar hoje</div>
+    ${topics.map((t, i) => `
+      <div style="padding:10px 0;${i < topics.length-1 ? 'border-bottom:1px solid var(--border)' : ''}">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+          <span style="font-size:9px;font-family:'DM Mono',monospace;color:${certColors[t.cert]||'var(--text)'};letter-spacing:1px">${t.cert}</span>
+          <span style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace">${t.estimated_hours}h</span>
+        </div>
+        <div style="font-size:13px">${t.topic}</div>
+        <div style="font-size:11px;color:var(--muted)">${t.domain}</div>
+      </div>
+    `).join('')}
+    <button class="btn-ghost" style="margin-top:10px;width:100%;font-size:11px" onclick="goToStudy()">ver plano completo →</button>
+  `;
+}
+
+function goToStudy() {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-study').classList.add('active');
+  document.querySelectorAll('.nav-item')[3].classList.add('active');
+  loadStudy();
+}
+
+// ── METRICS ───────────────────────────────────────────────────────
+
+async function loadMetrics() {
+  const { data } = await sb.from('metrics').select('*').order('date');
+  renderCharts(data || []);
+  renderMetricsTable(data || []);
+}
+
+function renderCharts(data) {
+  const labels = data.map(d => fmtDate(d.date));
+  const chartCfg = (canvasId, label, values, color) => {
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    if (canvasId === 'chart-weight' && chartWeight) chartWeight.destroy();
+    if (canvasId === 'chart-debt' && chartDebt) chartDebt.destroy();
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label,
+          data: values,
+          borderColor: color,
+          backgroundColor: color + '18',
+          borderWidth: 2,
+          pointRadius: 3,
+          pointBackgroundColor: color,
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#52525e', font: { size: 10 } }, grid: { color: '#1f1f25' } },
+          y: { ticks: { color: '#52525e', font: { size: 10 } }, grid: { color: '#1f1f25' } }
+        }
+      }
+    });
+    if (canvasId === 'chart-weight') chartWeight = chart;
+    else chartDebt = chart;
+  };
+  chartCfg('chart-weight', 'Peso (kg)', data.map(d => d.weight_kg), '#4ecdc4');
+  chartCfg('chart-debt',   'Dívida ($)', data.map(d => d.debt_usd), '#ff6b35');
+}
+
+function renderMetricsTable(data) {
+  if (!data.length) {
+    document.getElementById('metrics-table').innerHTML = `<p style="color:var(--muted);font-size:12px;padding:8px 0">Nenhum registro ainda.</p>`;
+    return;
+  }
+  const rows = [...data].reverse().slice(0, 10).map(d => `
+    <tr>
+      <td>${fmtDate(d.date)}</td>
+      <td>${d.weight_kg != null ? d.weight_kg + ' kg' : '–'}</td>
+      <td>${fmtCurrency(d.debt_usd)}</td>
+      <td>${d.workouts_week != null ? d.workouts_week + 'x' : '–'}</td>
+      <td>${d.study_sessions_week != null ? d.study_sessions_week + 'x' : '–'}</td>
+      <td style="color:var(--muted);font-size:11px">${d.notes || ''}</td>
+    </tr>
+  `).join('');
+  document.getElementById('metrics-table').innerHTML = `
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead>
+        <tr style="color:var(--muted);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase">
+          <th style="text-align:left;padding:6px 0;border-bottom:1px solid var(--border)">Data</th>
+          <th style="text-align:left;padding:6px 0;border-bottom:1px solid var(--border)">Peso</th>
+          <th style="text-align:left;padding:6px 0;border-bottom:1px solid var(--border)">Dívida</th>
+          <th style="text-align:left;padding:6px 0;border-bottom:1px solid var(--border)">Treinos</th>
+          <th style="text-align:left;padding:6px 0;border-bottom:1px solid var(--border)">Estudo</th>
+          <th style="text-align:left;padding:6px 0;border-bottom:1px solid var(--border)">Notas</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+async function saveMetric() {
+  const date = document.getElementById('m-date').value;
+  if (!date) { toast('Informe a data', 'error'); return; }
+  const payload = {
+    date,
+    weight_kg: document.getElementById('m-weight').value || null,
+    debt_usd: document.getElementById('m-debt').value || null,
+    workouts_week: document.getElementById('m-workouts').value || null,
+    study_sessions_week: document.getElementById('m-study').value || null,
+    notes: document.getElementById('m-notes').value || null
+  };
+  const { error } = await sb.from('metrics').upsert(payload, { onConflict: 'date' });
+  if (error) { toast(error.message, 'error'); return; }
+  toast('Métrica salva!');
+  showSaveMsg('metric-save-msg');
+  loadMetrics();
+}
+
+// ── CHECKLIST ─────────────────────────────────────────────────────
+
+async function loadChecklist() {
+  const { data: items } = await sb.from('checklist_items').select('*').eq('active', true).order('sort_order');
+  const { data: log } = await sb.from('checklist_log').select('*').eq('week_key', weekKey);
+
+  checkItems = items || [];
+  const checkedIds = new Set(log ? log.filter(l => l.checked).map(l => l.item_id) : []);
+
+  const cats = {
+    career:  { label:'⚡ Carreira',   color:'var(--yellow)' },
+    health:  { label:'💪 Saúde',      color:'var(--teal)'   },
+    finance: { label:'💰 Financeiro', color:'var(--orange)' },
+    study:   { label:'📚 Estudo',     color:'var(--purple)' },
+    life:    { label:'🎮 Vida',       color:'var(--pink)'   }
+  };
+
+  const grouped = {};
+  for (const item of checkItems) {
+    if (!grouped[item.category]) grouped[item.category] = [];
+    grouped[item.category].push(item);
+  }
+
+  let html = '';
+  for (const [cat, data] of Object.entries(grouped)) {
+    html += `<div class="check-section">
+      <div class="check-section-title" style="color:${cats[cat]?.color||'var(--muted)'}">${cats[cat]?.label||cat}</div>
+      ${data.map(item => `
+        <div class="check-item ${checkedIds.has(item.id) ? 'checked' : ''}" onclick="toggleCheck('${item.id}',this)">
+          <div class="check-box">${checkedIds.has(item.id) ? '✓' : ''}</div>
+          <span>${item.label}</span>
+        </div>
+      `).join('')}
+    </div>`;
+  }
+
+  document.getElementById('checklist-container').innerHTML = html;
+
+  const total = checkItems.length;
+  const checked = checkedIds.size;
+  const pct = total ? Math.round(checked / total * 100) : 0;
+  document.getElementById('check-progress-label').textContent = `${checked} / ${total} itens (${pct}%)`;
+  document.getElementById('check-progress-fill').style.width = `${pct}%`;
+
+  // History: last 4 weeks
+  await loadCheckHistory();
+}
+
+async function toggleCheck(itemId, el) {
+  el.classList.toggle('checked');
+  const isChecked = el.classList.contains('checked');
+  el.querySelector('.check-box').textContent = isChecked ? '✓' : '';
+
+  await sb.from('checklist_log').upsert(
+    { week_key: weekKey, item_id: itemId, checked: isChecked, updated_at: new Date().toISOString() },
+    { onConflict: 'week_key,item_id' }
+  );
+
+  // Update progress
+  const allItems = document.querySelectorAll('#checklist-container .check-item');
+  const total = allItems.length;
+  const checked = document.querySelectorAll('#checklist-container .check-item.checked').length;
+  const pct = total ? Math.round(checked / total * 100) : 0;
+  document.getElementById('check-progress-label').textContent = `${checked} / ${total} itens (${pct}%)`;
+  document.getElementById('check-progress-fill').style.width = `${pct}%`;
+}
+
+async function loadCheckHistory() {
+  // Get last 5 week keys
+  const weeks = [];
+  for (let i = 1; i <= 5; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() - i * 7);
+    weeks.push(getWeekKey(d));
+  }
+
+  const { data: items } = await sb.from('checklist_items').select('id').eq('active', true);
+  const { data: logs } = await sb.from('checklist_log').select('*').in('week_key', weeks).eq('checked', true);
+
+  const total = items?.length || 1;
+  const html = weeks.map(wk => {
+    const wkChecked = logs ? logs.filter(l => l.week_key === wk).length : 0;
+    const pct = Math.round(wkChecked / total * 100);
+    return `
+      <div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">
+          <span style="font-family:'DM Mono',monospace;color:var(--sub)">${wk}</span>
+          <span style="font-family:'DM Mono',monospace;color:var(--muted)">${wkChecked}/${total} · ${pct}%</span>
+        </div>
+        <div class="prog-track">
+          <div class="prog-fill" style="width:${pct}%;background:${pct>=70?'var(--green)':pct>=40?'var(--yellow)':'var(--red)'}"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('check-history').innerHTML = html || `<p style="color:var(--muted);font-size:12px">Sem histórico ainda.</p>`;
+}
+
+// ── STUDY ─────────────────────────────────────────────────────────
+
+async function loadStudy() {
+  await renderStudyTodayBanner();
+  await renderStudyContent(currentCert);
+}
+
+async function renderStudyTodayBanner() {
+  const { data } = await sb.from('study_plan')
+    .select('*').neq('status','done').order('priority').limit(1);
+  const t = data?.[0];
+  const certColors = {'Databricks':'var(--teal)','AWS':'var(--orange)','Agentic AI':'var(--purple)'};
+  document.getElementById('study-today-banner').innerHTML = t ? `
+    <div class="today-topic" style="margin-bottom:12px">
+      <div class="today-badge">PRÓXIMO</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <h3>${t.topic}</h3>
+          <p>${t.cert} · ${t.domain} · ${t.estimated_hours}h estimadas</p>
+        </div>
+        <button class="btn-save" style="white-space:nowrap;padding:7px 14px;font-size:11px" onclick="startTopic('${t.id}')">INICIAR →</button>
+      </div>
+    </div>
+  ` : '';
+}
+
+async function renderStudyContent(cert) {
+  const { data } = await sb.from('study_plan').select('*').eq('cert', cert).order('priority').order('domain');
+  if (!data) return;
+
+  const total = data.length;
+  const done = data.filter(t => t.status === 'done').length;
+  const pct = total ? Math.round(done / total * 100) : 0;
+  const totalHours = data.reduce((sum, t) => sum + (parseFloat(t.estimated_hours) || 0), 0);
+  const doneHours = data.filter(t => t.status === 'done').reduce((sum, t) => sum + (parseFloat(t.estimated_hours) || 0), 0);
+
+  const grouped = {};
+  for (const t of data) {
+    if (!grouped[t.domain]) grouped[t.domain] = [];
+    grouped[t.domain].push(t);
+  }
+
+  const domainOrder = {
+    'Databricks': ['Platform','Development','Processing','Production','Governance'],
+    'AWS': ['Ingestion & Transform (34%)','Data Store Mgmt (26%)','Data Operations (22%)','Security & Governance (18%)'],
+    'Agentic AI': ['Foundations','Frameworks','Tools & MCP','RAG','Production','Projects']
+  };
+
+  const certColors = {'Databricks':'var(--teal)','AWS':'var(--orange)','Agentic AI':'var(--purple)'};
+  const statusIcons = { pending: '', in_progress: '●', done: '✓' };
+  const color = certColors[cert] || 'var(--text)';
+
+  const orderedDomains = domainOrder[cert] || Object.keys(grouped);
+
+  document.getElementById('study-content').innerHTML = `
+    <div class="card" style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div>
+          <div class="card-label">${cert} · Progresso</div>
+          <div style="font-size:13px">${done}/${total} tópicos · ${doneHours.toFixed(1)}/${totalHours.toFixed(1)}h</div>
+        </div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:40px;color:${color}">${pct}%</div>
+      </div>
+      <div class="prog-track" style="height:6px">
+        <div class="prog-fill" style="width:${pct}%;background:${color}"></div>
+      </div>
+    </div>
+    ${orderedDomains.filter(d => grouped[d]).map(domain => `
+      <div class="domain-group">
+        <div class="domain-title">${domain}</div>
+        ${(grouped[domain] || []).map(t => `
+          <div class="topic-item ${t.status === 'done' ? 'done-item' : ''}" id="topic-${t.id}">
+            <div class="topic-status ${t.status}" onclick="cycleStatus('${t.id}','${t.status}')">
+              ${statusIcons[t.status] || ''}
+            </div>
+            <div class="topic-label">${t.topic}</div>
+            <div class="topic-hours">${t.estimated_hours}h</div>
+          </div>
+        `).join('')}
+      </div>
+    `).join('')}
+  `;
+}
+
+async function cycleStatus(id, current) {
+  const next = { pending: 'in_progress', in_progress: 'done', done: 'pending' };
+  const newStatus = next[current];
+  await sb.from('study_plan').update({ status: newStatus }).eq('id', id);
+  await renderStudyContent(currentCert);
+  await renderStudyTodayBanner();
+}
+
+async function startTopic(id) {
+  await sb.from('study_plan').update({ status: 'in_progress' }).eq('id', id);
+  toast('Tópico iniciado!');
+  loadStudy();
+}
+
+function switchCert(cert, el) {
+  currentCert = cert;
+  document.querySelectorAll('.cert-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('study-content').innerHTML = `<div class="loading">carregando...</div>`;
+  renderStudyContent(cert);
+}
+
+// ── REVIEW ────────────────────────────────────────────────────────
+
+let selectedMood = null;
+
+function selectMood(v) {
+  selectedMood = v;
+  document.querySelectorAll('.mood-btn').forEach(b => {
+    b.classList.toggle('selected', parseInt(b.dataset.mood) === v);
+  });
+}
+
+async function loadReview() {
+  // Load current week's review if it exists
+  const { data: curr } = await sb.from('weekly_review').select('*').eq('week_key', weekKey).single();
+  if (curr) {
+    document.getElementById('r-worked').value = curr.what_worked || '';
+    document.getElementById('r-drained').value = curr.what_drained || '';
+    document.getElementById('r-adjust').value = curr.one_adjustment || '';
+    if (curr.mood) selectMood(curr.mood);
+  }
+
+  // Load history
+  const { data: history } = await sb.from('weekly_review').select('*').order('week_key', {ascending:false}).limit(8);
+  const moodEmoji = [null,'😞','😕','😐','🙂','😄'];
+  const html = history ? history.map(r => `
+    <div class="review-card">
+      <div class="review-card-header">
+        <span class="review-week">${r.week_key}</span>
+        <span class="review-mood-display">${moodEmoji[r.mood] || ''}</span>
+      </div>
+      ${r.what_worked ? `<div class="review-section"><div class="review-section-label">Funcionou</div><div class="review-section-text">${r.what_worked}</div></div>` : ''}
+      ${r.what_drained ? `<div class="review-section"><div class="review-section-label">Drenou</div><div class="review-section-text">${r.what_drained}</div></div>` : ''}
+      ${r.one_adjustment ? `<div class="review-section"><div class="review-section-label">Ajuste</div><div class="review-section-text">${r.one_adjustment}</div></div>` : ''}
+    </div>
+  `).join('') : '';
+  document.getElementById('review-history').innerHTML = html || `<p style="color:var(--muted);font-size:12px">Nenhum review ainda.</p>`;
+}
+
+async function saveReview() {
+  const payload = {
+    week_key: weekKey,
+    what_worked: document.getElementById('r-worked').value || null,
+    what_drained: document.getElementById('r-drained').value || null,
+    one_adjustment: document.getElementById('r-adjust').value || null,
+    mood: selectedMood
+  };
+  const { error } = await sb.from('weekly_review').upsert(payload, { onConflict: 'week_key' });
+  if (error) { toast(error.message, 'error'); return; }
+  toast('Review salvo!');
+  showSaveMsg('review-save-msg');
+  loadReview();
+}
+
+// ── BOOT ──────────────────────────────────────────────────────────
+checkSession();
+</script>
+</body>
+</html>
